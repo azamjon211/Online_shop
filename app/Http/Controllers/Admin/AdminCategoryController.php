@@ -1,7 +1,7 @@
 <?php
-// app/Http/Controllers/Api/CategoryController.php
+// app/Http/Controllers/Admin/AdminCategoryController.php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -9,52 +9,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class CategoryController extends Controller
+class AdminCategoryController extends Controller
 {
-    // GET /api/categories
     public function index()
     {
-        $categories = Category::with('children')
-            ->whereNull('parent_id')
-            ->active()
-            ->orderBy('order')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $categories
-        ]);
-    }
-
-    // GET /api/categories/all (barcha kategoriyalar)
-    public function all()
-    {
         $categories = Category::with(['parent', 'children'])
+            ->withCount('products')
             ->orderBy('order')
+            ->paginate(20);
+
+        return view('admin.categories', compact('categories'));
+    }
+
+    public function create()
+    {
+        $categories = Category::whereNull('parent_id')
+            ->orderBy('name')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $categories
-        ]);
+        return view('admin.categories-create', compact('categories'));
     }
 
-    // GET /api/categories/{slug}
-    public function show($slug)
-    {
-        $category = Category::where('slug', $slug)
-            ->with(['children', 'products' => function($query) {
-                $query->active()->with('images')->limit(10);
-            }])
-            ->firstOrFail();
-
-        return response()->json([
-            'success' => true,
-            'data' => $category
-        ]);
-    }
-
-    // POST /api/categories
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -75,22 +50,34 @@ class CategoryController extends Controller
             $validated['slug'] = Str::slug($validated['name']);
         }
 
-        $category = Category::create($validated);
+        Category::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Kategoriya muvaffaqiyatli yaratildi',
-            'data' => $category->load('parent')
-        ], 201);
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Kategoriya yaratildi');
     }
 
-    // PUT/PATCH /api/categories/{id}
+    public function edit($id)
+    {
+        $category = Category::findOrFail($id);
+
+        if (request()->expectsJson()) {
+            return response()->json($category);
+        }
+
+        $categories = Category::whereNull('parent_id')
+            ->where('id', '!=', $id)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.categories-edit', compact('category', 'categories'));
+    }
+
     public function update(Request $request, $id)
     {
         $category = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
+            'name' => 'required|string|max:255',
             'slug' => 'nullable|string|unique:categories,slug,' . $id,
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
@@ -99,12 +86,10 @@ class CategoryController extends Controller
             'order' => 'integer'
         ]);
 
-        // O'z-o'ziga parent bo'lmaslik uchun
+        // Prevent self-parenting
         if (isset($validated['parent_id']) && $validated['parent_id'] == $id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kategoriya o\'z-o\'ziga parent bo\'la olmaydi'
-            ], 400);
+            return redirect()->back()
+                ->withErrors(['parent_id' => 'Kategoriya o\'z-o\'ziga parent bo\'la olmaydi']);
         }
 
         if ($request->hasFile('image')) {
@@ -120,14 +105,10 @@ class CategoryController extends Controller
 
         $category->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Kategoriya muvaffaqiyatli yangilandi',
-            'data' => $category->load('parent')
-        ]);
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Kategoriya yangilandi');
     }
 
-    // DELETE /api/categories/{id}
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
@@ -138,9 +119,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Kategoriya muvaffaqiyatli o\'chirildi'
-        ]);
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Kategoriya o\'chirildi');
     }
 }

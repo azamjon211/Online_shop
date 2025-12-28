@@ -6,19 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug');
-            $table->string('image');
-            $table->text('description');
-            $table->unsignedBigInteger('parent_id')->nullable;
-            $table->boolean('is_active')->default(true);  // BU QO'SHILISHI KERAK
+            $table->string('slug')->unique();
+            $table->string('image')->nullable();  // ← NULLABLE
+            $table->text('description')->nullable();  // ← NULLABLE
+            $table->unsignedBigInteger('parent_id')->nullable();  // ← NULLABLE - BU ENG MUHIM!
+            $table->boolean('is_active')->default(true);
             $table->integer('order')->default(0);
             $table->timestamps();
 
@@ -28,13 +25,9 @@ return new class extends Migration
                 ->onDelete('cascade');
         });
     }
-    public function down():void
+
+    public function down(): void
     {
-        schema::dropIfExists('categories');
+        Schema::dropIfExists('categories');
     }
-
-    /**
-     * Reverse the migrations.
-     */
-
 };

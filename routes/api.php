@@ -24,3 +24,14 @@ Route::middleware(['auth:api', 'admin'])->group(function(){
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
 });
 
+// Public routes
+Route::get('/brands', [BrandController::class, 'index']);
+Route::get('/brands/{slug}', [BrandController::class, 'show']);
+
+// Admin routes
+Route::middleware(['auth:api', 'admin'])->group(function () {
+    Route::post('/brands', [BrandController::class, 'store']);
+    Route::put('/brands/{id}', [BrandController::class, 'update']);
+    Route::delete('/brands/{id}', [BrandController::class, 'destroy']);
+});
+
