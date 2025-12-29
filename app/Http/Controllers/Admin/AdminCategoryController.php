@@ -85,8 +85,6 @@ class AdminCategoryController extends Controller
             'is_active' => 'boolean',
             'order' => 'integer'
         ]);
-
-        // Prevent self-parenting
         if (isset($validated['parent_id']) && $validated['parent_id'] == $id) {
             return redirect()->back()
                 ->withErrors(['parent_id' => 'Kategoriya o\'z-o\'ziga parent bo\'la olmaydi']);
