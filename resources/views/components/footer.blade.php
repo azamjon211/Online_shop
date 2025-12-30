@@ -54,11 +54,11 @@
                 <ul class="space-y-3 text-sm">
                     <li class="flex items-start gap-2">
                         <i class="fas fa-map-marker-alt mt-1 text-blue-500"></i>
-                        <span class="text-gray-400">Toshkent, Chilonzor tumani, Bunyodkor ko'chasi 1-uy</span>
+                        <span class="text-gray-400">Toshkent, Yunusobod, 4-kv 7-dom</span>
                     </li>
                     <li class="flex items-center gap-2">
                         <i class="fas fa-phone text-blue-500"></i>
-                        <a href="tel:+998901234567" class="text-gray-400 hover:text-white">+998 90 123 45 67</a>
+                        <a href="tel:+998901234567" class="text-gray-400 hover:text-white">+998 94 608 81 09</a>
                     </li>
                     <li class="flex items-center gap-2">
                         <i class="fas fa-envelope text-blue-500"></i>
@@ -70,10 +70,10 @@
                 <div class="mt-6">
                     <p class="text-sm mb-2">To'lov usullari:</p>
                     <div class="flex gap-2">
-                        <img src="/images/payment/uzcard.png" alt="Uzcard" class="h-8 bg-white rounded px-2">
-                        <img src="/images/payment/humo.png" alt="Humo" class="h-8 bg-white rounded px-2">
-                        <img src="/images/payment/payme.png" alt="Payme" class="h-8 bg-white rounded px-2">
-                        <img src="/images/payment/click.png" alt="Click" class="h-8 bg-white rounded px-2">
+                        <img src="/payment/uzcard.png" alt="Uzcard" class="h-8 bg-white rounded px-2">
+                        <img src="/payment/humo.png" alt="Humo" class="h-8 bg-white rounded px-2">
+                        <img src="/payment/payme.png" alt="Payme" class="h-8 bg-white rounded px-2">
+                        <img src="/payment/click.png" alt="Click" class="h-8 bg-white rounded px-2">
                     </div>
                 </div>
             </div>

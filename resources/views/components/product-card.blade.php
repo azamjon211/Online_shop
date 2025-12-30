@@ -54,7 +54,6 @@
                     @endif
                 @endfor
             </div>
-            <span class="text-xs text-gray-500">({{ $product->reviews_count }})</span>
         </div>
 
         {{-- Price --}}
