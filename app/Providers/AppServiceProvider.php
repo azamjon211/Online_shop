@@ -22,16 +22,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Share categories with all views
+        // Share categories with all views (except admin)
         View::composer('*', function ($view) {
+            // Skip admin routes
             if (!request()->is('admin/*')) {
-                $categories = Category::with('children')
-                    ->whereNull('parent_id')
-                    ->where('is_active', 1)
-                    ->orderBy('order')
-                    ->get();
+                try {
+                    $categories = Category::with('children')
+                        ->whereNull('parent_id')
+                        ->where('is_active', 1)
+                        ->orderBy('order')
+                        ->get();
 
-                $view->with('categories', $categories);
+                    $view->with('categories', $categories);
+                } catch (\Exception $e) {
+                    // If database not ready or error, provide empty collection
+                    $view->with('categories', collect());
+                }
             }
         });
     }

@@ -53,7 +53,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // Cart (Available for guests)
 Route::get('/cart', [CartController::class, 'index'])->name('cart');
-Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');  // ← CHANGED
 Route::put('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 Route::delete('/cart/clear/all', [CartController::class, 'clear'])->name('cart.clear');
@@ -69,13 +69,13 @@ Route::middleware('auth')->group(function () {
     // Wishlist
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
-    Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+    Route::delete('/wishlist/{productId}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');  // ← CHANGED: {id} to {productId}
 
     // Reviews
-    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+   /* Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-
+*/
     // Profile
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/orders', [ProfileController::class, 'orders'])->name('orders');
@@ -92,29 +92,17 @@ Route::middleware('auth')->group(function () {
 */
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
-
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Categories
     Route::resource('categories', AdminCategoryController::class);
     Route::get('categories/{id}/edit', [AdminCategoryController::class, 'edit'])->name('categories.edit.api');
-
-    // Brands
     Route::resource('brands', AdminBrandController::class);
     Route::get('brands/{id}/edit', [AdminBrandController::class, 'edit'])->name('brands.edit.api');
-
-    // Products
     Route::resource('products', AdminProductController::class);
     Route::post('products/{id}/images', [AdminProductController::class, 'uploadImages'])->name('products.images.upload');
     Route::delete('products/images/{imageId}', [AdminProductController::class, 'deleteImage'])->name('products.images.delete');
-
-    // Orders
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{orderNumber}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::put('orders/{orderNumber}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
-
-    // Reviews
     Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
     Route::put('reviews/{id}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
     Route::delete('reviews/{id}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');

@@ -17,7 +17,7 @@ class WishlistController extends Controller
             ->latest()
             ->get();
 
-        return view('frontend.profile.wishlist', compact('wishlists'));
+        return view('frontend.wishlist.index', compact('wishlists'));
     }
 
     public function toggle(Request $request)

@@ -36,31 +36,26 @@ class Category extends Model
         });
     }
 
-    // Ota kategoriya
     public function parent()
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
-    // Bolalar kategoriyalar
     public function children()
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    // Mahsulotlar (keyinroq qo'shamiz)
     public function products()
     {
         return $this->hasMany(Product::class);
     }
 
-    // Faqat faol kategoriyalar
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    // Faqat asosiy kategoriyalar
     public function scopeParents($query)
     {
         return $query->whereNull('parent_id');
