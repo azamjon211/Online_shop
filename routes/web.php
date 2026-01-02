@@ -72,10 +72,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/wishlist/{productId}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');  // ← CHANGED: {id} to {productId}
 
     // Reviews
-   /* Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+   Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-*/
+
     // Profile
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/orders', [ProfileController::class, 'orders'])->name('orders');

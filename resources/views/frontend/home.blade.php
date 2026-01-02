@@ -4,22 +4,40 @@
 @section('title', 'Bosh sahifa')
 
 @section('content')
-    {{-- Hero Slider --}}
-    <section class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div class="container mx-auto px-4">
-            <div class="py-20 flex items-center justify-between">
-                <div class="max-w-xl">
-                    <h1 class="text-5xl font-bold mb-4">O'zbekistondagi eng yirik onlayn do'kon</h1>
-                    <p class="text-xl mb-8">50,000+ mahsulot. Tezkor yetkazib berish. Kafolat.</p>
+    {{-- Hero Section - Full Width & Height --}}
+    <section class="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[600px]">
+
+            {{-- Left: Content --}}
+            <div class="flex items-center">
+                <div class="container mx-auto px-4 lg:px-8 py-16 lg:py-24">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        O'zbekistondagi eng yirik onlayn do'kon
+                    </h1>
+                    <p class="text-lg md:text-xl lg:text-2xl text-blue-100 mb-8 max-w-xl">
+                        50,000+ mahsulot. Tezkor yetkazib berish. Kafolat.
+                    </p>
                     <a href="{{ route('products.index') }}"
-                       class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 inline-block">
+                       class="inline-block bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-bold hover:bg-blue-50 transition shadow-xl transform hover:scale-105">
+                        <i class="fas fa-shopping-bag mr-2"></i>
                         Xarid qilish
                     </a>
                 </div>
-                <div class="hidden lg:block">
-                    <img src="/images/hero-phone.png" alt="Products" class="w-96">
+            </div>
+
+            {{-- Right: Full Height Image --}}
+            <div class="relative min-h-[400px] lg:min-h-full">
+                <img src="{{ asset('images/img.png') }}"
+                     alt="Products"
+                     class="absolute inset-0 w-full h-full object-cover object-center">
+
+                {{-- Sale Badge --}}
+                <div class="absolute top-8 right-8 bg-red-500 text-white w-28 h-28 rounded-full flex flex-col items-center justify-center shadow-2xl animate-bounce">
+                    <div class="text-4xl font-bold">-10%</div>
+                    <div class="text-xs font-semibold uppercase">Aksiya</div>
                 </div>
             </div>
+
         </div>
     </section>
 
@@ -151,12 +169,11 @@
 @push('scripts')
     <script>
         function addToCart(productId) {
-            // AJAX request to add to cart
-            fetch('/cart', {
+            fetch('/cart/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
                     product_id: productId,
@@ -167,8 +184,12 @@
                 .then(data => {
                     if (data.success) {
                         alert('Mahsulot savatchaga qo\'shildi!');
-                        location.reload(); // Cart count yangilash uchun
+                        location.reload();
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Savat funksiyasi hali tayyor emas');
                 });
         }
 
@@ -178,7 +199,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
                     product_id: productId
@@ -188,15 +209,19 @@
                 .then(data => {
                     if (data.success) {
                         const btn = document.querySelector('.wishlist-btn-' + productId + ' i');
-                        if (data.in_wishlist) {
-                            btn.classList.remove('far');
-                            btn.classList.add('fas');
-                        } else {
-                            btn.classList.remove('fas');
-                            btn.classList.add('far');
+                        if (btn) {
+                            if (data.in_wishlist) {
+                                btn.classList.remove('far');
+                                btn.classList.add('fas');
+                            } else {
+                                btn.classList.remove('fas');
+                                btn.classList.add('far');
+                            }
                         }
+                        alert(data.message);
                     }
-                });
+                })
+                .catch(error => console.error('Error:', error));
             @else
             alert('Iltimos, avval tizimga kiring!');
             window.location.href = '{{ route("login") }}';
@@ -204,3 +229,4 @@
         }
     </script>
 @endpush
+

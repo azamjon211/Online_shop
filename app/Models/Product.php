@@ -90,25 +90,26 @@ class Product extends Model
     // Accessors
     public function getPrimaryImageAttribute()
     {
-        $primary = $this->images()->where('is_primary', 1)->first();
+        $primaryImage = $this->images()->where('is_primary', 1)->first();
 
-        if ($primary) {
-            return asset('storage/' . $primary->image);
+        if ($primaryImage) {
+            // Check if it's a URL or local path
+            if (filter_var($primaryImage->image_path, FILTER_VALIDATE_URL)) {
+                return $primaryImage->image_path;
+            }
+            return asset('storage/' . $primaryImage->image_path);
         }
 
-        // Agar primary rasm bo'lmasa, birinchi rasmni qaytarish
-        $firstImage = $this->images()->first();
-        if ($firstImage) {
-            return asset('storage/' . $firstImage->image);
-        }
-
-        // Agar rasm umuman bo'lmasa, default rasm
-        return asset('images/no-image.png');
+        // Default placeholder
+        return 'https://via.placeholder.com/400x400?text=No+Image';
     }
 
+    // Accessor for final_price
     public function getFinalPriceAttribute()
     {
-        return $this->sale_price ?? $this->price;
+        return $this->sale_price && $this->sale_price < $this->price
+            ? $this->sale_price
+            : $this->price;
     }
 
     public function getInStockAttribute()
