@@ -107,3 +107,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::put('reviews/{id}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
     Route::delete('reviews/{id}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
 });
+Route::get('/debug-images', function() {
+    return view('debug-images');
+});

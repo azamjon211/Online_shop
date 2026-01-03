@@ -11,11 +11,27 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'category_id', 'brand_id', 'description',
-        'specifications', 'price', 'sale_price', 'discount_percent',
-        'stock', 'sku', 'is_active', 'is_featured', 'is_new',
-        'views', 'rating', 'reviews_count', 'sales_count',
-        'weight', 'warranty', 'order'
+        'category_id',
+        'brand_id',
+        'name',
+        'slug',
+        'description',
+        'specifications',
+        'price',
+        'sale_price',
+        'discount_percent',
+        'stock',
+        'sku',
+        'warranty',
+        'weight',
+        'is_active',
+        'is_featured',
+        'is_new',
+        'rating',
+        'reviews_count',
+        'sales_count',
+        'views',
+        'order',
     ];
 
     protected $casts = [
@@ -24,7 +40,6 @@ class Product extends Model
         'sale_price' => 'decimal:2',
         'discount_percent' => 'decimal:2',
         'rating' => 'decimal:2',
-        'weight' => 'decimal:2',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'is_new' => 'boolean',
@@ -56,30 +71,96 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
-    public function cartItems()
-    {
-        return $this->hasMany(CartItem::class);
-    }
-
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
     }
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    // Accessors
+
+    /**
+     * Get primary image path
+     * Database: images/products/file.jpg
+     * Output: products/file.jpg (for use with storage/)
+     */
+    public function getPrimaryImageAttribute()
+    {
+        // Avval is_primary = 1 bo'lgan rasmni qidirish
+        $primaryImage = $this->images()->where('is_primary', 1)->first();
+
+        if ($primaryImage) {
+            // images/products/file.jpg -> products/file.jpg
+            return str_replace('images/', '', $primaryImage->image);
+        }
+
+        // Agar primary yo'q bo'lsa, birinchi rasmni olish
+        $firstImage = $this->images()->first();
+
+        if ($firstImage) {
+            return str_replace('images/', '', $firstImage->image);
+        }
+
+        // Agar umuman rasm yo'q bo'lsa, default rasm
+        return 'no-image.png';
+    }
+
+    /**
+     * Get primary image full URL
+     */
+    public function getPrimaryImageUrlAttribute()
+    {
+        return asset('storage/' . $this->primary_image);
+    }
+
+    /**
+     * Get final price (sale price if exists, otherwise regular price)
+     */
+    public function getFinalPriceAttribute()
+    {
+        return $this->sale_price ?? $this->price;
+    }
+
+    /**
+     * Get discount amount
+     */
+    public function getDiscountAmountAttribute()
+    {
+        if ($this->sale_price && $this->sale_price < $this->price) {
+            return $this->price - $this->sale_price;
+        }
+        return 0;
+    }
+
+    /**
+     * Get discount percentage
+     */
+    public function getDiscountPercentageAttribute()
+    {
+        if ($this->sale_price && $this->sale_price < $this->price) {
+            return round((($this->price - $this->sale_price) / $this->price) * 100);
+        }
+        return 0;
+    }
+
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('is_active', 1);
+        return $query->where('is_active', true);
     }
 
     public function scopeFeatured($query)
     {
-        return $query->where('is_featured', 1);
+        return $query->where('is_featured', true);
     }
 
     public function scopeNew($query)
     {
-        return $query->where('is_new', 1);
+        return $query->where('is_new', true);
     }
 
     public function scopeInStock($query)
@@ -87,41 +168,26 @@ class Product extends Model
         return $query->where('stock', '>', 0);
     }
 
-    // Accessors
-    public function getPrimaryImageAttribute()
+    public function scopePopular($query)
     {
-        $primaryImage = $this->images()->where('is_primary', 1)->first();
-
-        if ($primaryImage) {
-            // Check if it's a URL or local path
-            if (filter_var($primaryImage->image_path, FILTER_VALIDATE_URL)) {
-                return $primaryImage->image_path;
-            }
-            return asset('storage/' . $primaryImage->image_path);
-        }
-
-        // Default placeholder
-        return 'https://via.placeholder.com/400x400?text=No+Image';
+        return $query->orderBy('sales_count', 'desc');
     }
 
-    // Accessor for final_price
-    public function getFinalPriceAttribute()
+    public function scopeTopRated($query)
     {
-        return $this->sale_price && $this->sale_price < $this->price
-            ? $this->sale_price
-            : $this->price;
+        return $query->orderBy('rating', 'desc');
     }
 
-    public function getInStockAttribute()
+    // Methods
+    public function incrementViews()
     {
-        return $this->stock > 0;
+        $this->increment('views');
     }
 
-    public function getDiscountPercentAttribute()
+    public function updateRating()
     {
-        if ($this->sale_price && $this->price > $this->sale_price) {
-            return round((($this->price - $this->sale_price) / $this->price) * 100);
-        }
-        return 0;
+        $this->rating = $this->reviews()->approved()->avg('rating') ?? 0;
+        $this->reviews_count = $this->reviews()->approved()->count();
+        $this->save();
     }
 }

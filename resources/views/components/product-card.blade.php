@@ -4,9 +4,10 @@
 <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group h-full flex flex-col">
     {{-- Image --}}
     <a href="{{ route('products.show', $product->slug) }}" class="block relative overflow-hidden">
-        <img src="{{ $product->primary_image }}"
+        <img src="{{ asset('storage/' . $product->primary_image) }}"
              alt="{{ $product->name }}"
-             class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300">
+             class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
+             onerror="this.src='{{ asset('images/no-image.png') }}'">
 
         {{-- Badges --}}
         <div class="absolute top-2 left-2 flex flex-col gap-2 z-10">
@@ -14,11 +15,8 @@
                 <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-md font-medium shadow">Yangi</span>
             @endif
             @if($product->sale_price && $product->sale_price < $product->price)
-                @php
-                    $discount = round((($product->price - $product->sale_price) / $product->price) * 100);
-                @endphp
                 <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-md font-medium shadow">
-                    -{{ $discount }}%
+                    -{{ $product->discount_percentage }}%
                 </span>
             @endif
             @if($product->stock <= 0)
